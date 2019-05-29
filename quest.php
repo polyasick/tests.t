@@ -42,121 +42,83 @@ require 'blocks/head.php'; ?>
        $query = $pdo->prepare($sql_1);
        $query->execute(['login' => $username, 'Id_test' =>$Id]);
        $row = $query -> fetch(PDO::FETCH_OBJ);
+	  $id_student = $row-> Id_student;
+	 //echo $id_student;
 
-//  пока не будут готовы вопросы
-      // $sql = "INSERT INTO seans(Id_cl, Id_stud, Id_tests) VALUES($row->Id_class, $row->Id_student,$row->Id_test)";
-      // $query1 = $pdo->query($sql);
-       ?>
-    <div class= "jumbotron">
+// запрос на ввод данных в seans
+   // $sql = "INSERT INTO seans(Id_cl, Id_stud, Id_tests) VALUES($row->Id_class, $row->Id_student,$row->Id_test)";
+     // $query1 = $pdo->query($sql);
 
-       <?php
-        // $vopros = 'SELECT question.Text_quest, question.Id_question
-        // FROM `test_list`
-        // JOIN `question`
-        // ON test_list.Id_test = question.Id_tests
-        // WHERE  `Id_test` = :Id_test ORDER BY RAND() LIMIT 5';
-        //
-        // $query = $pdo->prepare($vopros);
-        // $query->execute(['Id_test' =>$Id]);
+if ($_POST['butt']) {
+//очищаем предыдущие результаты
+$sql = "DELETE FROM `concrete_answer` WHERE id_student='". $id_student."' AND Id_test_new='".$Id."'";
+$pdo->query($sql);
 
-        $quest = 'SELECT  question.Text_quest, question.Id_question
-        from `question`
-        join `test_list`
-        on question.Id_tests = test_list.Id_test
-        where `Id_test` = :Id_test ';
-
-        $query = $pdo->prepare($quest);
-        $query->execute(['Id_test' =>$Id]);
+//заносим новые
+	for ($i=0;$i<100;$i++) {
+if 	($_POST['v'.$i]){
+$pieces = explode("|", $_POST['v'.$i]);
+echo $_POST['v'.$i]."<br/>";
+$sql = "INSERT INTO concrete_answer (Id_note_answ, Id_test_new, Id_question_concr, amswer_stud, id_student) VALUES(NULL, '".$Id."', '".$pieces[0]."', '".$pieces[1]."', '".$id_student."')";
+$query1 = $pdo->query($sql);
+}
+}
 
 
-        $answ = "SELECT list_answer.answer, list_answer.Id_question_LAnsw
-        FROM `list_answer`
-        JOIN `question`
-        ON list_answer.Id_question_LAnsw = question.Id_question
-        JOIN `test_list`
-        ON test_list.Id_test = question.Id_tests
-        where `Id_test` = :Id_test  ";
-        $query1 = $pdo->prepare($answ);
-        $query1->execute(['Id_test' => $Id]);
-
-        //
-        // echo $row1->Id_question_LAnsw,'<br>';
-        // echo $row1->answer, '<br>';
-        // echo  '<br>';
-        // костыли
-        $mass = array();
-        $answ = array();
-        while ($row1 = $query1 -> fetch(PDO::FETCH_OBJ) )
-        {
-          $mass[] = $row1->Id_question_LAnsw;
-          $answ[] = $row1->answer;
-        }
-
-        //
-        // foreach ($mass as $value) {
-        //     echo $value, " ";
-        //   }
-
-          // foreach ($answ as $vale) {
-          //     echo $vale, "<br>";
-          //   }
-
-        //  echo '<br>', $mass[0], $mass[1],$mass[2],$mass[3], '<br>';
-
-        $k = 0;
-        $i = 0;
-        while ($row = $query -> fetch(PDO::FETCH_OBJ) )
-        {
-          echo $row->Text_quest, '<br>';
-          // echo $row->Id_question,'айди вопроса вопроc<br>';
-          // echo $mass[$k],'айди вопроса ответ <br>';
-
-          // $answ1 = "SELECT list_answer.answer, list_answer.Id_question_LAnsw
-          // FROM `list_answer`
-          // JOIN `question`
-          // ON list_answer.Id_question_LAnsw = question.Id_question
-          // JOIN `test_list`
-          // ON test_list.Id_test = question.Id_tests
-          // where `Id_test` = :Id_test  ";
-          // $query2 = $pdo->prepare($answ1);
-          // $query2->execute(['Id_test' => $Id]);
-          // $row2 = $query2 -> fetch(PDO::FETCH_OBJ);
-
-          // все это костыли
-          // if($row->Id_question == $mass[$k])
-          // {
-          //
-          //
-          //   echo $answ[$i],' ответ <br>';
-          //   echo $answ[$i+1],' ответ <br>';
-          //   echo $answ[$i+2],' ответ <br>';
-          //   echo $answ[$i+3],' ответ <br>';
-          //  $k = $k+5;
-          //   $i = $i +5;
-          //
-          // echo "<br>";
-          // }
-          // else {
-          //   echo '<br>ошибка <br>';
-          // }
+echo "Данные теста успешно занесены!";
+}
+else {
+ ?>
+ <div class= "jumbotron">
+<form method="post" action="">
+<?php
+//номер вопроса
 
 
-        }
+$quest = 'SELECT  question.Text_quest, question.Id_question
+from `question`
+join `test_list`
+on question.Id_tests = test_list.Id_test
+where `Id_test` = :Id_test ';
+
+$query = $pdo->prepare($quest);
+$query->execute(['Id_test' =>$Id]);
+
+
+$chet=-1;
+$question_mass_text = array();
+$question_mass_id  = array();
+while ($row = $query -> fetch(PDO::FETCH_OBJ) )
+{
+$chet++;
+$question_mass_text[$chet] = $row->Text_quest;
+$question_mass_id [$chet] =$row->Id_question;
+}
+
+for ($i=0; $i<=$chet;$i++) {
+echo "Вопрос №".($i+1)." <br />".$question_mass_text[$i]."<br /><br />Ответы: <br />";
+
+$Id_que = $question_mass_id [$i];
+
+$answ = "SELECT * FROM `list_answer` where `Id_question_LAnsw` = '".$Id_que."'";
+$query = $pdo->prepare($answ);
+$query->execute(['Id_answer' =>$Id]);
+while ($row = $query -> fetch(PDO::FETCH_OBJ) )
+{
+	echo "<input  class='form-check-input' type='radio' name='v ".$i."' value='".$row->Id_question_LAnsw."|".$row->answer."'>".$row->answer."<br />";
+}
+
+echo "<br />";
+echo '<input type="hidden" value = "'.$Id.'" name="Id_test_new"/>';
+}
+
         ?>
-
-      <!-- запрос на вывод вопросов -->
-
-
+<input type="submit" value = "Я решил!" class="btn btn-secondary mt-3" name="butt"/>
+</form>
       </div>
 
-
-
-
-
-
-
     </div>
-
+<?php }?>
 <!--
     <aside class="col-md-4">
       <div class = "p-3 mb-4" style="background-color: #98A4B3">
