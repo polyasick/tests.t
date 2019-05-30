@@ -127,7 +127,12 @@ $query1 = $pdo->query($sql);
 
         ?>
         </div>
-        <input type="submit" value = "Следующий вопрос" class="btn btn-secondary mt-3" name="butt"/>
+	<?php
+        if($i == 4)
+
+         echo "<input type='submit' value = 'Закончить тест' class='btn btn-secondary mt-3' name='butt'/>";
+       else
+        echo "<input type='submit' value = 'Следующий вопрос' class='btn btn-secondary mt-3' name='butt'/> ";?>
         </form>
       </div>
 
